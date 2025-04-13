@@ -32,7 +32,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Comment on PR if markdown check failed
-      if: failure()
+      if: failure() && github.event_name == 'pull_request'
       uses: peter-evans/create-or-update-comment@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
