@@ -21,27 +21,11 @@ jobs:
       id: check_md
       run: |
         set -o pipefail
-        python md_checker.py README.md > md_report.txt
-      continue-on-error: true
+        python md_checker.py README.md | tee md_report.txt
 
-    - name: Read result
-      id: result
-      run: |
-        {
-          echo "content<<EOF"
-          cat md_report.txt
-          echo "EOF"
-        } >> "$GITHUB_OUTPUT"
-
-
-    - name: Comment on PR if markdown check failed
-      if: failure() && github.event_name == 'pull_request'
-      uses: peter-evans/create-or-update-comment@v3
+    - name: Upload markdown report
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        issue-number: ${{ github.event.pull_request.number }}
-        body: |
-          🚫 Markdown 檢查未通過
-          ```
-          ${{ steps.result.outputs.content }}
-          ```
+        name: markdown-report
+        path: md_report.txt
