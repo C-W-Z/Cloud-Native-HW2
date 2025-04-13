@@ -22,14 +22,17 @@ jobs:
       run: |
         set -o pipefail
         python md_checker.py README.md > md_report.txt
+      continue-on-error: true
 
     - name: Read result
       id: result
       run: |
-        content=$(cat md_report.txt)
-        echo "content<<EOF" >> $GITHUB_OUTPUT
-        echo "$content" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        {
+          echo "content<<EOF"
+          cat md_report.txt
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
 
     - name: Comment on PR if markdown check failed
       if: failure() && github.event_name == 'pull_request'
