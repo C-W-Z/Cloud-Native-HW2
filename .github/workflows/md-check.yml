@@ -2,11 +2,8 @@ name: Markdown Checker
 
 on:
   push:
-    paths:
-      - '**.md'
   pull_request:
-    paths:
-      - '**.md'
+
 jobs:
   check-markdown:
     runs-on: ubuntu-latest
@@ -23,7 +20,8 @@ jobs:
     - name: Run markdown checker
       id: check_md
       run: |
-        python md_checker.py README.md > md_report.txt || echo "Markdown check failed" >> md_report.txt
+        set -o pipefail
+        python md_checker.py README.md > md_report.txt
 
     - name: Read result
       id: result
