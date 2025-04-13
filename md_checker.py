@@ -9,6 +9,19 @@ def is_potential_task_line(line):
     # 抓出可能是 task list 的行
     return re.search(r"^\s*[-+*]\s*\[.*\]", line)
 
+def find_invalid_links(line):
+    issues = []
+
+    # 合法連結格式：[說明文字](網址)
+    link_pattern = r"\[[^\[\]]+\]\([^)]+\)"
+    all_matches = re.finditer(r"\[.*?\]\(.*?\)", line)
+
+    for match in all_matches:
+        if not re.match(link_pattern, match.group()):
+            issues.append(f"可能的連結格式錯誤 `{match.group()}`")
+
+    return issues
+
 def check_markdown(filename):
     issues = []
     with open(filename, 'r', encoding='utf-8') as f:
@@ -20,6 +33,11 @@ def check_markdown(filename):
             # 檢查任務清單格式
             if is_potential_task_line(line) and not is_valid_task_line(line):
                 issues.append(f"{filename}:{lineno}: Task list format error `{line.strip()}`")
+
+            # 檢查連結格式
+            link_issues = find_invalid_links(line)
+            for li in link_issues:
+                issues.append(f"{filename}:{lineno}: {li}")
 
     return issues
 
