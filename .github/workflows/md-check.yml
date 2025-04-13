@@ -2,11 +2,8 @@ name: Markdown Checker
 
 on:
   push:
-    paths:
-      - '**.md'
   pull_request:
-    paths:
-      - '**.md'
+
 jobs:
   check-markdown:
     runs-on: ubuntu-latest
@@ -23,24 +20,12 @@ jobs:
     - name: Run markdown checker
       id: check_md
       run: |
-        python md_checker.py README.md > md_report.txt || echo "Markdown check failed" >> md_report.txt
+        set -o pipefail
+        python md_checker.py README.md | tee md_report.txt
 
-    - name: Read result
-      id: result
-      run: |
-        content=$(cat md_report.txt)
-        echo "content<<EOF" >> $GITHUB_OUTPUT
-        echo "$content" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-
-    - name: Comment on PR if markdown check failed
-      if: failure()
-      uses: peter-evans/create-or-update-comment@v3
+    - name: Upload markdown report
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        issue-number: ${{ github.event.pull_request.number }}
-        body: |
-          🚫 Markdown 檢查未通過
-          ```
-          ${{ steps.result.outputs.content }}
-          ```
+        name: markdown-report
+        path: md_report.txt
